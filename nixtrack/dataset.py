@@ -1,5 +1,6 @@
 import os
 import nixio as nix
+import numpy as np
 
 from .util import AxisType
 
@@ -86,8 +87,32 @@ class Dataset(object):
         """
         return self._nixfile if self.is_open else None
 
-    @property
-    def positions(self, track=None, node=None, start_frame=0, end_frame=None, axis_type=AxisType.Index):
+    def positions(self, track=None, node=None, axis_start=0, axis_end=None, axis_type=AxisType.Index):
+        """reads the positions data from file. Additional arguments can be used to filter the data.
+
+        Parameters
+        ----------
+        track : str or int, optional
+            the track name or id, by default None
+        node : str or int, optional
+            the node name or id, by default None
+        axis_start : int or float, optional
+            the start frame or time. Interpretation is controlled via the axis_type argument. , by default 0
+        axis_end : int or float, optional
+            the end frame or time. Interpretation is controlled via the axis_type argument. by default None
+        axis_type : AxisType, optional
+            Controls whether the axis is in frame indices (AxisType.Index) or seconds (AxisType.Time), by default AxisType.Index
+
+        Returns
+        -------
+        _type_
+            _description_
+
+        Raises
+        ------
+        ValueError
+            if an invalid node or track is given
+        """
         if axis_type == AxisType.Time:
             dt = 1. if axis_type == AxisType.Index else 1./self.fps
 
@@ -96,19 +121,61 @@ class Dataset(object):
             tnames, tids = self.tracks
             if isinstance(track, str):
                 if track in tnames:
-                    track_id = tids[tnames == track]
+                    track_id = tids[tnames.index(track)]
                 else:
-                    raise ValueError(f"Given track {track} is inalid! Options are {tnames}.")
-            track_id = int(track)
+                    raise ValueError(f"Given track {track} is invalid! Options are {tnames} or {tids}.")
+            else:
+                track_id = int(track)
+            if track_id not in tids:
+                raise ValueError(f"Given track {track} is invalid! Options are {tnames} or {tids}.")
 
         node_id = None
         if node is not None:
             nnames = self.nodes
-            n_ids = list(range(len(nnames)))
-            if isinstance
+            nids = list(range(len(nnames)))
+            if isinstance(node, str):
+                if node in nnames:
+                    node_id = nids[nnames.index(node)]
+                else:
+                    raise ValueError(f"Given node {node} is invalid! Options are {nnames}.")
+            else:
+                node_id = int(node)
 
-        p = self._block.data_arrays["positions"]
-        pass
+        if track_id is not None:
+            track_data = self._block.data_arrays["track"][:]
+
+        pos_array = self._block.data_arrays["position"]
+        axis = np.array(pos_array.dimensions[0].ticks)
+        time_axis = axis / self.fps
+
+        if node_id is None:
+            pos_data = pos_array[:]
+        else:
+            pos_data = np.squeeze(pos_array[:, :, node_id])
+
+        start_index = 0
+        if axis_start is not None:
+            if axis_type == AxisType.Index:
+                start_index = np.where(axis >= axis_start)[0][0]
+            else:
+                start_index = np.where(time_axis >= axis_start)[0][0]
+        end_index = len(axis)
+        if axis_end is not None:
+            if axis_type == AxisType.Index:
+                end_index = np.where(axis < axis_end)[0][-1]
+            else:
+                end_index = np.where(time_axis < axis_end)[0][-1]
+        pos_data = pos_data[start_index:end_index+1]
+
+        axis = axis[start_index:end_index+1]
+        time_axis = time_axis[start_index:end_index+1]
+        track_data = track_data[start_index:end_index+1]
+        if track_id is not None:
+            pos_data = pos_data[track_data == track_id]
+            axis = axis[track_data == track_id]
+            time_axis = time_axis[track_data == track_id]
+
+        return pos_data, axis if axis_type == AxisType.Index else time_axis
 
     @property
     def nodes(self):
@@ -143,6 +210,10 @@ class Dataset(object):
         return self._block.sources[0].metadata["frames"]
 
     @property
+    def instance_count(self):
+        return self._block.data_arrays["position"].shape[0]
+
+    @property
     def video_info(self):
         return self._block.sources[0].metadata
 
@@ -153,6 +224,10 @@ class Dataset(object):
     @property
     def video_name(self):
         return self._block.sources[0].metadata["filename"]
+
+    @property
+    def _position_array(self):
+        return self._block.data_arrays["position"]
 
     def __str__(self) -> str:
         info = "{n:s}\n\tlocation: {l:s}\n\tfile size {s:.2f} MB"
