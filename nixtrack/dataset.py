@@ -141,8 +141,7 @@ class Dataset(object):
             else:
                 node_id = int(node)
 
-        if track_id is not None:
-            track_data = self._block.data_arrays["track"][:]
+        track_data = self._block.data_arrays["track"][:]
 
         pos_array = self._block.data_arrays["position"]
         axis = np.array(pos_array.dimensions[0].ticks)
