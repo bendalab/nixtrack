@@ -2,24 +2,30 @@ import os
 import nixio as nix
 import numpy as np
 
-from .util import AxisType
+from .util import AxisType, FileMode
 
 
 class Dataset(object):
 
-    def __init__(self, filename:str) -> None:
+    def __init__(self, filename:str, filemode=FileMode.ReadOnly) -> None:
         if not os.path.exists(filename):
             raise FileNotFoundError(f"File {filename}")
         self._filename = filename
         self._nixfile = None
         self._block = None
         self._mapping_version = None
+        self.open_file(filemode)
 
-        self.open_file()
 
+    def open_file(self, filemode=FileMode.ReadOnly):
+        """Open a nix file with in the given FileMode.
 
-    def open_file(self):
-        nf = nix.File.open(self._filename, nix.FileMode.ReadOnly)
+        Parameters
+        ----------
+        filemode : nixtrack.FileMode, optional
+            ReadOnly or ReadWrite filemode, by default FileMode.ReadOnly
+        """
+        nf = nix.File.open(self._filename, filemode.value)
         valid = True
         sections = nf.find_sections(lambda s: s.type == "nix.tracking.metadata")
         valid = valid & len(sections) > 0
@@ -32,6 +38,7 @@ class Dataset(object):
             ValueError(f"File {self._filename} is and invalid nix file that does not contain tracking data.")
         self._nixfile = nf
         self._block = nf.blocks[0]
+        self._multitag = self._block.multi_tags["tracking results"]
 
     @property
     def is_open(self) -> bool:
@@ -51,8 +58,6 @@ class Dataset(object):
             self._nixfile.flush()
             self._nixfile.close()
         self._nixfile = None
-        self._metadata_buffer.clear(False)
-        self._feature_buffer.clear(False)
 
     @property
     def is_open(self) -> bool:
@@ -188,6 +193,97 @@ class Dataset(object):
 
         return pos_data, ret_axis, instance_score, node_score
 
+    @property
+    def positions_array(self):
+        return self._multitag.references["position"]
+
+    @property
+    def track_array(self):
+        """Returns nix.DataArray that contains the track ids associated to each tracked instance. Use d.tracks get the mapping from id to track name.
+            Track data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) are instantly persisted!
+        
+        To access the data:
+        ```
+        import nixtrack
+        d = nixtrack.Dataset("test.nix")
+        track_array = d.track_array
+        track_array[100:110]  # get 10 values
+
+        track_array[:100] = np.zeros(100)  # to set them to zero. will only work when the file is opened in ReadWrite mode.
+        ```
+
+        Returns
+        -------
+        nix.DataArray
+            The DataArray containing the tack information for each instance.
+        """
+        return self._block.data_arrays["track"]
+
+    @property
+    def skeleton_array(self):
+        """Returns nix.DataArray that contains the skeleton ids associated to each tracked instance. Use d.skeletons get the mapping from id to track name.
+            Data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) are instantly persisted!
+        
+        To access the data:
+        ```
+        import nixtrack
+        d = nixtrack.Dataset("test.nix")
+        track_array = d.track_array
+        track_array[100:110]  # get 10 values
+
+        track_array[:100] = np.zeros(100)  # to set them to zero. will only work when the file is opened in ReadWrite mode.
+        ```
+
+        Returns
+        -------
+        nix.DataArray
+            The DataArray containing the skeleton information for each instance.
+        """
+        return self._block.data_arrays["skeleton"]
+
+    @property
+    def instance_score_array(self):
+        """Returns nix.DataArray that contains the scores for the tracked instances.
+            Data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) are instantly persisted!
+        
+        To access the data:
+        ```
+        import nixtrack
+        d = nixtrack.Dataset('test.nix')
+        track_array = d.track_array
+        track_array[100:110]  # get 10 values
+
+        track_array[:100] = np.zeros(100)  # to set them to zero. will only work when the file is opened in ReadWrite mode.
+        ```
+
+        Returns
+        -------
+        nix.DataArray
+            The DataArray containing the instance scores for each instance.
+        """
+        return self._block.data_arrays["instance score"]
+
+    @property
+    def node_score_array(self):
+        """Returns nix.DataArray that contains the scores for each found node. Use d.nodes get the mapping from id to track name.
+            Data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) is instantly persisted!
+        
+        To access the data:
+        ```
+        import nixtrack
+        d = nixtrack.Dataset("test.nix")
+        score_array = d.node_score_array
+        score_array.shape  # is 2D, first dimension is the number of instances, second represents the nodes
+        d.nodes  # to get the node names
+        score_array.dimensions[1].labels
+        ```
+
+        Returns
+        -------
+        nix.DataArray
+            The DataArray containing the node scores for each instance.
+        """
+        return self._block.data_arrays["node score"]
 
     @property
     def nodes(self):
