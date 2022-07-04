@@ -1,4 +1,6 @@
+from asyncore import readwrite
 from enum import Enum
+import nixio as nix
 
 class AxisType(Enum):
     """Enumeration to control the time axis returned by the positions function.
@@ -8,3 +10,8 @@ class AxisType(Enum):
     """
     Time = 0
     Index = 1
+
+
+class FileMode(Enum):
+    ReadOnly = nix.FileMode.ReadOnly
+    ReadWrite = nix.FileMode.ReadWrite
