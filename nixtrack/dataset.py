@@ -105,8 +105,14 @@ class Dataset(object):
 
         Returns
         -------
-        _type_
-            _description_
+        positions: np.ndarray
+            The positions. This will be at least 2-D. 1st dimension represents time/frames, the second the x, and y coordinates. If no node is specified, the result is 3-D with the last dimension being the nodes.
+        axis: np.ndarray
+            1-D array containing the frame indices or the times of the frames depending on the AxisType.
+        instance_score: np.ndarray
+            1-D array containing the instance scores, i.e. the quality of the predicion. Is zero for user-labeled instances
+        node_score: np.ndarray
+            At least 1D array containing the score of the given node. If no node is specified, it will be 2-D with the second dimension representing the nodes.
 
         Raises
         ------
