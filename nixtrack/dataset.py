@@ -142,15 +142,18 @@ class Dataset(object):
                 node_id = int(node)
 
         track_data = self._block.data_arrays["track"][:]
-
+        instance_score = self._block.data_arrays["instance score"][:]
+        
         pos_array = self._block.data_arrays["position"]
         axis = np.array(pos_array.dimensions[0].ticks)
         time_axis = axis / self.fps
 
         if node_id is None:
             pos_data = pos_array[:]
+            node_score = self._block.data_arrays["node score"][:]
         else:
             pos_data = np.squeeze(pos_array[:, :, node_id])
+            node_score = self._block.data_arrays["node score"][:, node_id]
 
         start_index = 0
         if axis_start is not None:
@@ -165,7 +168,8 @@ class Dataset(object):
             else:
                 end_index = np.where(time_axis < axis_end)[0][-1]
         pos_data = pos_data[start_index:end_index+1]
-
+        instance_score = instance_score[start_index:end_index+1]
+        node_score = node_score[start_index:end_index+1]
         axis = axis[start_index:end_index+1]
         time_axis = time_axis[start_index:end_index+1]
         track_data = track_data[start_index:end_index+1]
@@ -174,7 +178,10 @@ class Dataset(object):
             axis = axis[track_data == track_id]
             time_axis = time_axis[track_data == track_id]
 
-        return pos_data, axis if axis_type == AxisType.Index else time_axis
+        ret_axis = axis if axis_type == AxisType.Index else time_axis
+
+        return pos_data, ret_axis, instance_score, node_score
+
 
     @property
     def nodes(self):
