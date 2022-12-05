@@ -82,6 +82,10 @@ class Dataset(object):
         return self._filename
 
     @property
+    def metadata(self) -> nix.Section:
+        return self.nix_file.sections[0]
+
+    @property
     def nix_file(self) -> nix.File:
         """Returns the nix-file.
 
