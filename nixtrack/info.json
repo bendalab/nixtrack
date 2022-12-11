@@ -4,7 +4,7 @@
     "STATUS": "dev",
     "RELEASE": "0.1.0_dev",
     "AUTHOR": "Jan Grewe",
-    "COPYRIGHT": "2021-22, Neuroethology lab University of Tuebingen, Jan Grewe",
+    "COPYRIGHT": "2021-22, Neuroethology lab, University of Tuebingen, Jan Grewe",
     "CONTACT": "jan.grewe@g-node.org",
     "BRIEF": "Mapping of tracking results to nix files.",
     "HOMEPAGE": "https://github.com/bendalab"

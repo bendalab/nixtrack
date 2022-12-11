@@ -1,4 +1,3 @@
-from asyncore import readwrite
 from enum import Enum
 import nixio as nix
 

@@ -73,7 +73,7 @@ class Dataset(object):
     @property
     def name(self) -> str:
         """Returns the name of the dataset (i.e. the full filename)
-        
+
         Returns
         -------
         str
@@ -205,7 +205,7 @@ class Dataset(object):
     def track_array(self):
         """Returns nix.DataArray that contains the track ids associated to each tracked instance. Use d.tracks get the mapping from id to track name.
             Track data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) are instantly persisted!
-        
+
         To access the data:
         ```
         import nixtrack
@@ -227,7 +227,7 @@ class Dataset(object):
     def skeleton_array(self):
         """Returns nix.DataArray that contains the skeleton ids associated to each tracked instance. Use d.skeletons get the mapping from id to track name.
             Data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) are instantly persisted!
-        
+
         To access the data:
         ```
         import nixtrack
@@ -249,7 +249,7 @@ class Dataset(object):
     def instance_score_array(self):
         """Returns nix.DataArray that contains the scores for the tracked instances.
             Data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) are instantly persisted!
-        
+
         To access the data:
         ```
         import nixtrack
@@ -271,7 +271,7 @@ class Dataset(object):
     def node_score_array(self):
         """Returns nix.DataArray that contains the scores for each found node. Use d.nodes get the mapping from id to track name.
             Data can be accessed in a numpy style. Note: The returned DataArray is 'file-attached' any changes done to the data (in ReadWrite mode) is instantly persisted!
-        
+
         To access the data:
         ```
         import nixtrack
@@ -350,4 +350,3 @@ class Dataset(object):
     def __repr__(self) -> str:
         repr = "Dataset object for file {name:s} at {id}"
         return repr.format(name=self.name, id=hex(id(self)))
-
