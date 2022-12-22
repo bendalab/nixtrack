@@ -295,8 +295,10 @@ class Dataset(object):
         return positions.dimensions[-1].labels
 
     def _read_map(self, df):
-        names = [r[0] for r in df]
-        ids = [r[1] for r in df]
+        name_col = df.column_names.index("name")
+        idx_col = df.column_names.index("index")
+        names = [r[name_col] for r in df]
+        ids = [r[idx_col] for r in df]
         return names, ids
 
     @property

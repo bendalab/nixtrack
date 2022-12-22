@@ -24,8 +24,9 @@ All types are prefixed by ``nix.tracking``. That is, for example frame indices a
 |nodes_score| The score/quality assigned to the nodes| 2D DataArray dtype: float dimensions: [RangeDimension linked to frame indices, SetDimension {node names}]|
 |instance_score| The score/quality assigned to the instance| 1D DataArray dtype: float, dimensions: [RangeDimension linked to frame indices]|
 |nodes_score| The score/quality assigned to the nodes| 2D DataArray dtype: float dimensions: [RangeDimension linked to frame indices, SetDimension {node names}]|
-|skeleton_map | Maps node names to integer values | DataFrame, columns: [name, index] |
-|track_map | Maps track names to integer values | DataFrame, columns: [name, index] |
+|skeleton_map | Maps skeletons to integer values | DataFrame, columns: [name, index] |
+|track_map | Maps track names to integer values. Track names may not be unique, uniqueness comes by the addition of the *spawned_on* frame index. | DataFrame, columns: [name, spawned_on, index] |
+|node_map | Maps nodes to integer values | DataFrame, columns: [name, weight, index, skeleton_index] |
 
 ## Mapping sleap to nix.tracking
 
