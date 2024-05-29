@@ -1,0 +1,16 @@
+site_name: nixtrack
+
+repo_url: https://github.com/bendalab/nixtrack/
+
+edit_uri: ""
+
+site_author: Benda-Lab
+
+theme: readthedocs
+    
+nav:
+    - Home: 'index.md'
+    - 'User guide':
+        - 'nixtrack': 'format.md'
+    - 'Code':
+        - API reference: 'api/index.html'
